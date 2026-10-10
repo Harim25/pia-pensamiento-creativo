@@ -1,0 +1,97 @@
+/* Estructura de la página: encabezado, resumen, barra de vistas y pie. */
+
+/* Encabezado */
+.hero {
+  background: var(--hero-bg);
+  color: var(--hero-ink);
+  padding-block: 22px 56px;
+}
+
+.hero-eyebrow {
+  margin: 0 0 8px;
+  font: 600 12px/1 var(--f-mono);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--hero-muted);
+}
+
+h1 {
+  margin: 0;
+  font: 800 clamp(36px, 10vw, 56px)/1 var(--f-display);
+  letter-spacing: -.02em;
+  text-wrap: balance;
+}
+
+.hero-lede {
+  margin: 12px 0 0;
+  max-width: 46ch;
+  font-size: 16px;
+}
+
+.demo-tag {
+  display: inline-block;
+  margin: 14px 0 0;
+  padding: 4px 10px;
+  border: 1px solid var(--hero-muted);
+  border-radius: 999px;
+  font: 500 12px/1.4 var(--f-mono);
+  color: var(--hero-muted);
+}
+
+/* Resumen (se monta sobre el encabezado) */
+.summary {
+  position: relative;
+  margin-top: -36px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.stat {
+  padding: 12px 10px 12px 14px;
+  min-width: 0;
+}
+
+.stat + .stat {
+  border-left: 1px solid var(--line);
+}
+
+.stat b {
+  display: block;
+  font: 600 28px/1 var(--f-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+  font-size: 12.5px;
+  line-height: 1.2;
+  color: var(--muted);
+}
+
+.stat-label--ok { color: var(--ok); }
+.stat-label--warn { color: var(--warn); }
+.stat-label--off { color: var(--off); }
+
+/* Barra para cambiar de vista */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+/* Pie */
+.footer-note {
+  max-width: 62ch;
+  margin-block: 28px 48px;
+  font-size: 13px;
+  color: var(--muted);
+}

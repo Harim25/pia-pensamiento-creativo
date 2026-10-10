@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Baños FIME</title>
+  <meta name="description" content="Consulta qué baños de FIME tienen papel, jabón y agua antes de caminar hasta ahí, y reporta lo que veas.">
+  <meta name="theme-color" content="#0E6B3C">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+
+  <!-- Tipografías -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+
+  <!-- Estilos (el orden importa: primero variables, luego base, luego lo demás) -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/report-sheet.css">
+</head>
+<body>
+
+  <!-- Íconos SVG. Se usan con <svg class="icon"><use href="#i-nombre"/></svg> -->
+  <svg class="icon-sprite" width="0" height="0" aria-hidden="true" focusable="false">
+    <symbol id="i-check" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3.2L13 4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 16 16"><path d="M8 2.2L14.2 13H1.8L8 2.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6.6v3M8 11.5v.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-off" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.2 8h5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <!-- Encabezado -->
+  <header class="hero">
+    <div class="container">
+      <p class="hero-eyebrow">FIME · UANL</p>
+      <h1>Baños FIME</h1>
+      <p class="hero-lede">Mira qué baños tienen papel, jabón y agua antes de caminar hasta ahí. Si ves algo distinto, avisa en un toque.</p>
+      <p class="demo-tag">Versión de prueba con datos de ejemplo</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Resumen general -->
+    <section class="summary" aria-label="Resumen de todos los baños">
+      <div class="stat">
+        <b id="summary-ok">0</b>
+        <span class="stat-label stat-label--ok"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>En orden</span>
+      </div>
+      <div class="stat">
+        <b id="summary-warn">0</b>
+        <span class="stat-label stat-label--warn"><svg class="icon" aria-hidden="true"><use href="#i-warn"/></svg>Con problemas</span>
+      </div>
+      <div class="stat">
+        <b id="summary-off">0</b>
+        <span class="stat-label stat-label--off"><svg class="icon" aria-hidden="true"><use href="#i-off"/></svg>No disponibles</span>
+      </div>
+    </section>
+
+    <!-- Cambio de vista -->
+    <div class="toolbar">
+      <div class="segmented" role="group" aria-label="Vista">
+        <button type="button" data-view="restrooms" aria-pressed="true">Baños</button>
+        <button type="button" data-view="feed" aria-pressed="false">Reportes recientes<span class="count-badge" id="feed-count">0</span></button>
+      </div>
+    </div>
+
+    <!-- Vista: baños por edificio -->
+    <div id="panel-restrooms">
+      <div class="filters">
+        <div class="filter-row">
+          <div class="segmented" role="group" aria-label="Tipo de baño">
+            <button type="button" data-gender="all" aria-pressed="true">Todos</button>
+            <button type="button" data-gender="H" aria-pressed="false">Hombres</button>
+            <button type="button" data-gender="M" aria-pressed="false">Mujeres</button>
+          </div>
+          <label class="checkbox"><input type="checkbox" id="only-problems"><span>Solo con problemas</span></label>
+        </div>
+        <div>
+          <p class="field-label" id="building-picker-label">Edificio</p>
+          <div class="building-picker" id="building-picker" role="group" aria-labelledby="building-picker-label"></div>
+        </div>
+      </div>
+      <div class="building-list" id="building-list"></div>
+    </div>
+
+    <!-- Vista: reportes recientes -->
+    <div id="panel-feed" hidden>
+      <ul class="feed" id="feed"></ul>
+    </div>
+
+    <p class="footer-note">Proyecto para ¡Ingenieros al rescate!, Pensamiento Creativo, FIME UANL. Equipo La Corregidora. Los pisos, el estado de cada baño y los reportes son datos de ejemplo. Lo que reportes aquí solo cambia lo que ves en tu pantalla.</p>
+  </main>
+
+  <!-- Hoja de reporte (se llena desde js/report-sheet.js) -->
+  <div class="scrim" id="scrim" hidden></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+    <div class="sheet-header">
+      <div>
+        <h2 id="sheet-title"></h2>
+        <p id="sheet-subtitle"></p>
+      </div>
+      <button type="button" class="sheet-close" id="sheet-close" aria-label="Cerrar"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="sheet-body"><form id="report-form"></form></div>
+    <div class="sheet-footer">
+      <button type="submit" form="report-form" class="submit-button">Enviar reporte</button>
+      <p>Tu reporte se suma al de otras personas. Con más confirmaciones, el estado es más confiable.</p>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Scripts (el orden importa: cada archivo usa lo que definen los anteriores) -->
+  <script src="js/data.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/report-sheet.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

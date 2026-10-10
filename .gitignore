@@ -1,0 +1,14 @@
+# Documentos de las actividades del curso. Traen nombres completos, matrículas
+# y fotos del equipo, así que no se suben al repositorio. Si el equipo decide
+# publicarlos, borren esta línea.
+docs/*.pdf
+
+# Configuración local de herramientas y editores
+.claude/
+.vscode/
+.idea/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,114 @@
+/*
+  Variables de diseño: colores, sombras y tipografías.
+  Concepto: señalética de campus. Cada edificio es una placa con su número
+  en mono y dos filas debajo (hombres, mujeres). El estado siempre va en
+  texto + ícono, nunca solo en color.
+
+  Para cambiar un color, cámbialo aquí y se actualiza en todo el sitio.
+*/
+
+/* Tema claro (por defecto) */
+:root {
+  color-scheme: light;
+
+  --bg: #F2F7F3;
+  --surface: #FFFFFF;
+  --ink: #10231A;
+  --muted: #4D6155;
+  --line: #D2DFD6;
+
+  --brand: #0E6B3C;
+  --brand-fill: #0E6B3C;
+  --on-brand: #FFFFFF;
+  --brand-soft: #E1EFE6;
+
+  --hero-bg: #0E6B3C;
+  --hero-ink: #FFFFFF;
+  --hero-muted: #CFE6D8;
+
+  /* Estados: en orden, con problemas, faltante, no disponible */
+  --ok: #1B7443;
+  --ok-bg: #DDF1E4;
+  --warn: #855400;
+  --warn-bg: #FAEBC6;
+  --bad: #A12A22;
+  --bad-bg: #FADFDB;
+  --off: #46535E;
+  --off-bg: #E4E9ED;
+
+  --scrim: rgba(8, 20, 14, .5);
+  --shadow: 0 1px 2px rgba(16, 35, 26, .06), 0 6px 18px rgba(16, 35, 26, .07);
+
+  --f-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --f-body: 'Figtree', system-ui, sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+
+/*
+  Tema oscuro. Está dos veces a propósito: el primer bloque sigue la
+  preferencia del sistema y el segundo permite forzarlo con
+  <html data-theme="dark">. Si cambias un valor, cámbialo en los dos.
+*/
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #0C1712;
+    --surface: #13241B;
+    --ink: #E6F1EA;
+    --muted: #9DB5A7;
+    --line: #25402F;
+
+    --brand: #5CCB90;
+    --brand-fill: #2FA06A;
+    --on-brand: #04140C;
+    --brand-soft: #17372A;
+
+    --hero-bg: #0F2A1D;
+    --hero-ink: #E6F1EA;
+    --hero-muted: #9DB5A7;
+
+    --ok: #6FD39A;
+    --ok-bg: #14341F;
+    --warn: #F2C35C;
+    --warn-bg: #3A2C0C;
+    --bad: #FF9E94;
+    --bad-bg: #3D1714;
+    --off: #B6C2CC;
+    --off-bg: #222B33;
+
+    --scrim: rgba(0, 0, 0, .62);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .3);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0C1712;
+  --surface: #13241B;
+  --ink: #E6F1EA;
+  --muted: #9DB5A7;
+  --line: #25402F;
+
+  --brand: #5CCB90;
+  --brand-fill: #2FA06A;
+  --on-brand: #04140C;
+  --brand-soft: #17372A;
+
+  --hero-bg: #0F2A1D;
+  --hero-ink: #E6F1EA;
+  --hero-muted: #9DB5A7;
+
+  --ok: #6FD39A;
+  --ok-bg: #14341F;
+  --warn: #F2C35C;
+  --warn-bg: #3A2C0C;
+  --bad: #FF9E94;
+  --bad-bg: #3D1714;
+  --off: #B6C2CC;
+  --off-bg: #222B33;
+
+  --scrim: rgba(0, 0, 0, .62);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .3);
+}
