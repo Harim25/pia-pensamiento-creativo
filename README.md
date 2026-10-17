@@ -70,8 +70,11 @@ Los scripts se cargan en ese orden desde `index.html` y comparten un solo objeto
 - [ ] Poner los edificios, pisos y baños reales de FIME en `js/data.js`.
 - [ ] Guardar los reportes en un servidor para que todos vean lo mismo.
 - [ ] Caducar reportes viejos (un «no hay papel» de hace 5 horas ya no es confiable).
+- [ ] Permitir subir fotos a los reportes o comentarios
 - [ ] Frenar reportes falsos: límite por persona, pedir varias confirmaciones, acceso con cuenta universitaria.
 - [ ] Códigos QR por baño que abran directo su hoja de reporte.
+- [ ] Hacer pantalla de login
+- [ ] Hacer pantalla de configuracion general (esta por verse)
 - [ ] Vista para intendencia con lo que hay que reabastecer o reparar.
 - [ ] Publicar la página (por ejemplo con GitHub Pages).
 
