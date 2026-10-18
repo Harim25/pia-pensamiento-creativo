@@ -81,6 +81,11 @@ Los scripts se cargan en ese orden desde `index.html` y comparten un solo objeto
 ## Cómo colaborar
 
 1. Antes de empezar, baja lo último: `git pull`.
+2. Crea una rama para tu cambio: `git checkout -b nombre-del-cambio`.
+3. Haz el cambio y pruébalo en el navegador, en tamaño de celular y de computadora.
+4. Sube la rama y abre un *pull request* para que alguien más del equipo lo revise.
+
+Convenciones del código: los comentarios y los textos que ve el usuario van en español; los nombres de variables, funciones y clases CSS van en inglés. El estado de un baño siempre se muestra con texto e ícono, nunca solo con color.
 
 ## Llaves de la base de datos
 contraseña para entrar: lacorregidora10
@@ -89,8 +94,3 @@ SUPABASE_URL=https://loupbzmuxqyrkynhpwux.supabase.co
 SUPABASE_PUBLISHABLE_KEY=sb_publishable_dXu2cfjLAGlxulAzD3M64Q_0yO801Np
 SUPABASE_SECRET_KEY=sb_secret_snmzqhW9LM4M4mACZGpT0Q_Hq3nLm1R
 SUPABASE_JWKS_URL=https://loupbzmuxqyrkynhpwux.supabase.co/auth/v1/.well-known/jwks.json
-2. Crea una rama para tu cambio: `git checkout -b nombre-del-cambio`.
-3. Haz el cambio y pruébalo en el navegador, en tamaño de celular y de computadora.
-4. Sube la rama y abre un *pull request* para que alguien más del equipo lo revise.
-
-Convenciones del código: los comentarios y los textos que ve el usuario van en español; los nombres de variables, funciones y clases CSS van en inglés. El estado de un baño siempre se muestra con texto e ícono, nunca solo con color.
