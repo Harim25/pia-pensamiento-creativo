@@ -43,7 +43,7 @@ window.BanosFIME = window.BanosFIME || {};
 
   /* DATO DE EJEMPLO. Piso del baño en cada edificio: [hombres, mujeres] */
   const FLOORS = {
-    1: [1, 2], 2: [2, 1], 3: [1, 3], 4: [1, 1], 5: [1, 1], 6: [1.5, 2.5],
+    1: [1, 2], 2: [1, 2], 3: [3, 2], 4: [1, 1], 5: [1, 1], 6: [1.5, 2.5],
     7: [1, 1], 8: [2, 2], 9: [1.5, 2.5], 10: [3, 2], 11: [1, 2], 12: [2, 3]
   };
 
