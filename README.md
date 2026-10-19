@@ -109,7 +109,6 @@ Los scripts se cargan en ese orden desde `index.html` y comparten un solo objeto
 - [x] Frenar reportes falsos: inicio de sesión, límite por persona y conteo de confirmaciones.
 - [x] Hacer pantalla de login.
 - [x] Hacer pantalla de configuración general (tema y cerrar sesión, en «Mi cuenta»).
-- [x] Vista para intendencia con lo que hay que reabastecer o reparar.
 - [ ] Publicar la página (por ejemplo con GitHub Pages).
 
 ## Cómo colaborar
