@@ -17,7 +17,7 @@
       const saved = await App.api.createReport(user, store.allGoodReport(restroom.id, 'Atendido por intendencia'), null);
       store.addReport(saved);
       onReport();
-      showToast('Edificio ' + restroom.building + ' · ' + store.genderLabel(restroom.gender) + ' quedó en orden.');
+      showToast(store.restroomName(restroom) + ' quedó en orden.');
     } catch (error) {
       button.disabled = false;
       button.textContent = 'Marcar como atendido';

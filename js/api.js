@@ -20,7 +20,7 @@
   'use strict';
 
   const config = App.config;
-  const { SUPPLIES, FAULTS, GENDERS, BUILDING_COUNT, SAMPLE_REPORTS } = App.data;
+  const { SUPPLIES, FAULTS, GENDERS, BUILDINGS, SAMPLE_REPORTS } = App.data;
   const { MINUTE, uniqueId } = App.utils;
 
   /* Traduce los errores más comunes de Supabase */
@@ -172,14 +172,16 @@
       });
     }
 
-    for (let building = 1; building <= BUILDING_COUNT; building++) {
+    BUILDINGS.forEach(function (building, buildingIndex) {
+      const n = buildingIndex + 1;
       GENDERS.forEach(function (gender, genderIndex) {
-        const id = building + gender.key;
+        if (!building[gender.key]) return;
+        const id = building.key + gender.key;
         /* Algunos baños se quedan sin reportes, para ver cómo se ven */
-        if ((building * 2 + genderIndex) % 7 === 3) return;
+        if ((n * 2 + genderIndex) % 7 === 3) return;
 
         const sample = SAMPLE_REPORTS[id];
-        const minutesAgo = sample ? sample.minutesAgo : 5 + ((building * 7 + genderIndex * 3) % 50);
+        const minutesAgo = sample ? sample.minutesAgo : 5 + ((n * 7 + genderIndex * 3) % 50);
 
         /* Un reporte inicial con todo en orden... */
         add(id, minutesAgo + 40, {});
@@ -193,7 +195,7 @@
           for (let i = people - 1; i >= 0; i--) add(id, minutesAgo + i, sample);
         }
       });
-    }
+    });
     return reports.sort(function (a, b) { return a.at - b.at; });
   }
 
