@@ -3,18 +3,20 @@
   'use strict';
 
   const { SUPPLIES, BUILDING_COUNT } = App.data;
-  const { byId, timeAgo, icon } = App.utils;
+  const { byId, escapeHTML, timeAgo, icon } = App.utils;
   const store = App.store;
 
   function renderSummary() {
-    const counts = { ok: 0, warn: 0, off: 0 };
+    const counts = { ok: 0, warn: 0, off: 0, unknown: 0 };
     store.restrooms.forEach(function (restroom) {
       counts[store.getStatus(restroom).level]++;
     });
     byId('summary-ok').textContent = counts.ok;
     byId('summary-warn').textContent = counts.warn;
     byId('summary-off').textContent = counts.off;
-    byId('feed-count').textContent = store.feed.length;
+    byId('summary-unknown').textContent = counts.unknown;
+    byId('feed-count').textContent = store.getFeed().length;
+    byId('staff-count').textContent = store.restrooms.filter(store.hasProblems).length;
   }
 
   /* Botones "Todos, 1, 2, ... 12". Solo se dibuja una vez */
@@ -29,24 +31,34 @@
   function chipsHTML(restroom) {
     let html = '';
     SUPPLIES.forEach(function (supply) {
-      const available = restroom.supplies[supply.key].value === 'si';
-      html += '<span class="chip ' + (available ? 'chip--ok' : 'chip--bad') + '">'
-        + icon(available ? 'i-check' : 'i-x') + supply.chip + '</span>';
+      const value = restroom.supplies[supply.key].value;
+      const look = { si: ['chip--ok', 'i-check'], no: ['chip--bad', 'i-x'], '?': ['chip--unknown', 'i-unknown'] }[value];
+      html += '<span class="chip ' + look[0] + '">' + icon(look[1]) + supply.chip + '</span>';
     });
     const faultCount = store.activeFaultCount(restroom);
     if (faultCount) {
       html += '<span class="chip chip--warn">' + icon('i-warn') + faultCount
         + (faultCount === 1 ? ' falla' : ' fallas') + '</span>';
     }
+    if (restroom.photos.length) {
+      html += '<span class="chip chip--neutral">' + icon('i-camera') + restroom.photos.length
+        + (restroom.photos.length === 1 ? ' foto' : ' fotos') + '</span>';
+    }
     return html;
   }
 
-  function restroomRowHTML(restroom) {
+  function statusPillHTML(restroom) {
     const status = store.getStatus(restroom);
-    return '<button type="button" class="restroom-row' + (status.level === 'off' ? ' is-unavailable' : '') + '" data-id="' + restroom.id + '">'
+    return '<span class="status-pill status-pill--' + status.level + '">' + icon(status.icon) + status.label + '</span>';
+  }
+
+  function restroomRowHTML(restroom) {
+    const level = store.getStatus(restroom).level;
+    const dim = level === 'off' || level === 'unknown';
+    return '<button type="button" class="restroom-row' + (dim ? ' is-unavailable' : '') + '" data-id="' + restroom.id + '">'
       + '<span class="restroom-row-top">'
       + '<span class="restroom-name"><b>' + store.genderLabel(restroom.gender) + '</b><span class="restroom-floor">Piso ' + restroom.floor + '</span></span>'
-      + '<span class="restroom-row-end"><span class="status-pill status-pill--' + status.level + '">' + icon(status.icon) + status.label + '</span>' + icon('i-chev') + '</span>'
+      + '<span class="restroom-row-end">' + statusPillHTML(restroom) + icon('i-chev') + '</span>'
       + '</span>'
       + '<span class="chips">' + chipsHTML(restroom) + '</span>'
       + '</button>';
@@ -57,7 +69,7 @@
     const visible = store.restrooms.filter(function (restroom) {
       return (filters.gender === 'all' || restroom.gender === filters.gender)
         && (filters.building === 'all' || restroom.building === Number(filters.building))
-        && (!filters.onlyProblems || store.getStatus(restroom).level !== 'ok');
+        && (!filters.onlyProblems || store.hasProblems(restroom));
     });
 
     if (!visible.length) {
@@ -80,11 +92,16 @@
     order.forEach(function (building) {
       /* El conteo del encabezado considera todos los baños del edificio, no solo los filtrados */
       const all = store.restrooms.filter(function (r) { return r.building === building; });
-      const withProblems = all.filter(function (r) { return store.getStatus(r).level !== 'ok'; }).length;
+      const withProblems = all.filter(store.hasProblems).length;
+      const withReports = all.filter(function (r) { return r.reportCount > 0; }).length;
+      let meta = 'Todo en orden';
+      if (withProblems) meta = withProblems + ' de ' + all.length + ' con problemas';
+      else if (!withReports) meta = 'Sin reportes recientes';
+
       html += '<section class="building-card">'
         + '<div class="building-card-header">'
         + '<h2>Edificio <span class="building-number">' + building + '</span></h2>'
-        + '<span class="building-card-meta">' + (withProblems ? withProblems + ' de ' + all.length + ' con problemas' : 'Todo en orden') + '</span>'
+        + '<span class="building-card-meta">' + meta + '</span>'
         + '</div>'
         + groups[building].map(restroomRowHTML).join('')
         + '</section>';
@@ -93,14 +110,55 @@
   }
 
   function renderFeed() {
-    byId('feed').innerHTML = store.feed.map(function (report) {
+    const feed = store.getFeed();
+    byId('feed-note').textContent = 'Reportes de las últimas ' + App.config.reportLifetimeHours
+      + ' horas. Los más viejos caducan y ya no cuentan para el estado de los baños.';
+
+    if (!feed.length) {
+      byId('feed').innerHTML = '<li class="empty-state">Nadie ha reportado en las últimas horas. ¡Sé el primero!</li>';
+      return;
+    }
+
+    byId('feed').innerHTML = feed.map(function (report) {
       return '<li class="feed-item">'
         + '<span class="building-number" aria-hidden="true">' + report.building + '</span>'
         + '<div class="feed-item-body">'
-        + '<div class="feed-item-title"><span>Edificio ' + report.building + ' · ' + store.genderLabel(report.gender) + ' · Piso ' + report.floor + '</span>'
+        + '<div class="feed-item-title"><span>Edificio ' + report.building + ' · ' + store.genderLabel(report.gender) + ' · Piso ' + report.floor
+        + (report.isStaff ? ' <span class="staff-badge">Intendencia</span>' : '') + '</span>'
         + '<small data-at="' + report.at + '">' + timeAgo(report.at) + '</small></div>'
-        + '<ul>' + report.texts.map(function (text) { return '<li>' + text + '</li>'; }).join('') + '</ul>'
+        + '<ul>' + report.texts.map(function (text) { return '<li>' + escapeHTML(text) + '</li>'; }).join('') + '</ul>'
+        + (report.comment ? '<p class="feed-comment">«' + escapeHTML(report.comment) + '»</p>' : '')
+        + (report.photoUrl ? '<a class="feed-photo" href="' + escapeHTML(report.photoUrl) + '" target="_blank" rel="noopener"><img src="' + escapeHTML(report.photoUrl) + '" alt="Foto del reporte" loading="lazy"></a>' : '')
         + '</div></li>';
+    }).join('');
+  }
+
+  /* Lista de pendientes para intendencia: primero los no disponibles, luego los que tienen más tareas */
+  function renderStaff() {
+    const order = { off: 0, warn: 1 };
+    const pending = store.restrooms
+      .filter(store.hasProblems)
+      .sort(function (a, b) {
+        const byLevel = order[store.getStatus(a).level] - order[store.getStatus(b).level];
+        return byLevel || store.pendingTasks(b).length - store.pendingTasks(a).length;
+      });
+
+    if (!pending.length) {
+      byId('staff-list').innerHTML = '<p class="empty-state">No hay pendientes. Todos los baños reportados están en orden.</p>';
+      return;
+    }
+
+    byId('staff-list').innerHTML = pending.map(function (restroom) {
+      return '<section class="staff-card">'
+        + '<div class="staff-card-top">'
+        + '<span class="building-number" aria-hidden="true">' + restroom.building + '</span>'
+        + '<div class="staff-card-title"><b>Edificio ' + restroom.building + ' · ' + store.genderLabel(restroom.gender) + '</b>'
+        + '<small>Piso ' + restroom.floor + ' · <span data-at="' + restroom.updatedAt + '">' + timeAgo(restroom.updatedAt) + '</span></small></div>'
+        + statusPillHTML(restroom)
+        + '</div>'
+        + '<ul class="task-list">' + store.pendingTasks(restroom).map(function (task) { return '<li>' + escapeHTML(task) + '</li>'; }).join('') + '</ul>'
+        + '<button type="button" class="secondary-button" data-attend="' + restroom.id + '">' + icon('i-check') + 'Marcar como atendido</button>'
+        + '</section>';
     }).join('');
   }
 
@@ -115,7 +173,8 @@
     renderSummary();
     renderList(filters);
     renderFeed();
+    renderStaff();
   }
 
-  App.render = { renderSummary, renderBuildingPicker, renderList, renderFeed, refreshTimes, renderAll };
+  App.render = { renderSummary, renderBuildingPicker, renderList, renderFeed, renderStaff, refreshTimes, renderAll };
 })(window.BanosFIME);

@@ -1,18 +1,21 @@
 /*
   Estado de la aplicación: la lista de baños, los reportes recientes y las
-  reglas para calcular el estado y aplicar un reporte. No toca el HTML.
+  reglas para calcular el estado de cada baño. No toca el HTML ni la red.
 
-  Hoy todo vive en memoria y se pierde al recargar. Cuando haya un servidor,
-  este es el archivo que cambia: `restrooms` y `feed` se cargarían de ahí y
-  `submitReport` enviaría el reporte en lugar de modificar los datos locales.
+  El estado de un baño se calcula repasando sus reportes de las últimas
+  horas (config.reportLifetimeHours), del más viejo al más nuevo. Si un
+  reporte coincide con lo que ya se sabía, suma una confirmación; si es
+  distinto, reemplaza el dato y reinicia el conteo. Los reportes más viejos
+  caducan y dejan de contar.
 */
 (function (App) {
   'use strict';
 
-  const { SUPPLIES, FAULTS, ACCESS_STATES, GENDERS, BUILDING_COUNT, FLOORS, SAMPLE_REPORTS } = App.data;
+  const { SUPPLIES, FAULTS, ACCESS_STATES, GENDERS, BUILDING_COUNT, FLOORS } = App.data;
   const { MINUTE, lowerFirst } = App.utils;
 
-  const startedAt = Date.now();
+  const LIFETIME = App.config.reportLifetimeHours * 60 * MINUTE;
+  const MAX_PHOTOS = 4;
 
   /* --- Consultas a los catálogos --- */
 
@@ -29,171 +32,210 @@
     return (value === 'si' ? 'Hay ' : 'No hay ') + supply.noun;
   }
 
-  function faultLabel(key) {
-    return FAULTS.find(function (f) { return f.key === key; }).label;
-  }
-
-  /* --- Datos iniciales --- */
+  /* --- Baños --- */
 
   /*
-    Arma un baño a partir de los datos de ejemplo. Forma del objeto:
-      { id, building, gender, floor, updatedAt,
+    Forma de un baño:
+      { id: '3M', building, gender, floor, reportCount, updatedAt, photos: [{ url, at }],
         access:   { value, confirmations },
-        supplies: { papel: { value: 'si' | 'no', confirmations }, ... },
+        supplies: { papel: { value: 'si' | 'no' | '?', confirmations }, ... },
         faults:   { puerta: { active, confirmations }, ... } }
+    reportCount = 0 significa que no hay reportes recientes.
   */
-  function buildRestroom(building, gender, genderIndex) {
-    const id = building + gender;
-    const sample = SAMPLE_REPORTS[id] || {};
-
-    const supplies = {};
-    SUPPLIES.forEach(function (supply) {
-      const reported = sample.supplies && sample.supplies[supply.key];
-      supplies[supply.key] = reported
-        ? { value: reported[0], confirmations: reported[1] }
-        : { value: 'si', confirmations: 1 + ((building + genderIndex) % 3) };
-    });
-
-    const faults = {};
-    FAULTS.forEach(function (fault) {
-      const confirmations = (sample.faults && sample.faults[fault.key]) || 0;
-      faults[fault.key] = { active: confirmations > 0, confirmations: confirmations };
-    });
-
-    const minutesAgo = sample.minutesAgo !== undefined
-      ? sample.minutesAgo
-      : 5 + ((building * 7 + genderIndex * 3) % 50);
-
-    return {
-      id: id,
-      building: building,
-      gender: gender,
-      floor: FLOORS[building][genderIndex],
-      access: {
-        value: sample.access || 'abierto',
-        confirmations: sample.access ? 1 : 1 + (building % 3)
-      },
-      supplies: supplies,
-      faults: faults,
-      updatedAt: startedAt - minutesAgo * MINUTE
-    };
-  }
-
   const restrooms = [];
   for (let building = 1; building <= BUILDING_COUNT; building++) {
     GENDERS.forEach(function (gender, genderIndex) {
-      restrooms.push(buildRestroom(building, gender.key, genderIndex));
+      restrooms.push({ id: building + gender.key, building: building, gender: gender.key, floor: FLOORS[building][genderIndex] });
     });
   }
 
-  /* Reportes recientes de ejemplo, del más nuevo al más viejo */
-  const feed = [];
-  restrooms.forEach(function (restroom) {
-    const sample = SAMPLE_REPORTS[restroom.id];
-    if (!sample) return;
-    const texts = [];
-    if (sample.access) texts.push(accessState(sample.access).feed);
-    Object.keys(sample.supplies || {}).forEach(function (key) {
-      texts.push(supplyPhrase(key, sample.supplies[key][0]));
+  function resetRestroom(restroom) {
+    restroom.reportCount = 0;
+    restroom.updatedAt = null;
+    restroom.photos = [];
+    restroom.access = { value: 'abierto', confirmations: 0 };
+    restroom.supplies = {};
+    SUPPLIES.forEach(function (supply) {
+      restroom.supplies[supply.key] = { value: '?', confirmations: 0 };
     });
-    Object.keys(sample.faults || {}).forEach(function (key) {
-      texts.push(faultLabel(key));
+    restroom.faults = {};
+    FAULTS.forEach(function (fault) {
+      restroom.faults[fault.key] = { active: false, confirmations: 0 };
     });
-    feed.push({
-      building: restroom.building,
-      gender: restroom.gender,
-      floor: restroom.floor,
-      at: restroom.updatedAt,
-      texts: texts
-    });
-  });
-  feed.sort(function (a, b) { return b.at - a.at; });
-
-  /* --- Reglas --- */
+  }
 
   function findRestroom(id) {
     return restrooms.find(function (r) { return r.id === id; });
   }
 
-  /* Estado general de un baño. level: 'ok' | 'warn' | 'off' */
+  /*
+    Aplica un reporte al estado de un baño.
+    Regresa los textos de lo que cambió, para "Reportes recientes".
+  */
+  function applyReport(restroom, report) {
+    const changes = [];
+
+    if (report.access === restroom.access.value) {
+      restroom.access.confirmations++;
+    } else {
+      restroom.access = { value: report.access, confirmations: 1 };
+      changes.push(accessState(report.access).feed);
+    }
+
+    SUPPLIES.forEach(function (supply) {
+      const answer = report.supplies[supply.key];
+      const current = restroom.supplies[supply.key];
+      if (answer !== 'si' && answer !== 'no') return; /* "No sé" no cuenta */
+      if (answer === current.value) {
+        current.confirmations++;
+      } else {
+        /* Si antes no se sabía nada, solo vale la pena avisar cuando falta algo */
+        if (current.value !== '?' || answer === 'no') changes.push(supplyPhrase(supply.key, answer));
+        restroom.supplies[supply.key] = { value: answer, confirmations: 1 };
+      }
+    });
+
+    FAULTS.forEach(function (fault) {
+      const reported = Boolean(report.faults[fault.key]);
+      const current = restroom.faults[fault.key];
+      if (reported && current.active) {
+        current.confirmations++;
+      } else if (reported) {
+        restroom.faults[fault.key] = { active: true, confirmations: 1 };
+        changes.push(fault.label);
+      } else if (current.active) {
+        restroom.faults[fault.key] = { active: false, confirmations: 0 };
+        changes.push('Ya no hay: ' + lowerFirst(fault.label));
+      }
+    });
+
+    return changes;
+  }
+
+  /* --- Reportes --- */
+
+  let reports = [];   /* todos los reportes cargados, del más viejo al más nuevo */
+  let feed = [];      /* reportes vigentes ya traducidos a texto, del más nuevo al más viejo */
+  let oldestActiveAt = null;
+
+  /* Recalcula todos los baños con los reportes que no han caducado */
+  function rebuild() {
+    const since = Date.now() - LIFETIME;
+    restrooms.forEach(resetRestroom);
+    feed = [];
+    oldestActiveAt = null;
+
+    reports.forEach(function (report) {
+      if (report.at < since) return;
+      const restroom = findRestroom(report.restroomId);
+      if (!restroom) return;
+      if (oldestActiveAt === null) oldestActiveAt = report.at;
+
+      const wasUnknown = restroom.reportCount === 0;
+      const changes = applyReport(restroom, report);
+      restroom.reportCount++;
+      restroom.updatedAt = report.at;
+      if (report.photoUrl) {
+        restroom.photos.unshift({ url: report.photoUrl, at: report.at });
+        restroom.photos.length = Math.min(restroom.photos.length, MAX_PHOTOS);
+      }
+
+      let texts = changes;
+      if (!texts.length) {
+        if (report.isStaff) texts = ['Intendencia lo dejó en orden'];
+        else if (wasUnknown) texts = ['Todo en orden'];
+        else texts = ['Confirmó el estado actual'];
+      }
+      feed.unshift({
+        id: report.id,
+        restroomId: restroom.id,
+        building: restroom.building,
+        gender: restroom.gender,
+        floor: restroom.floor,
+        at: report.at,
+        texts: texts,
+        comment: report.comment,
+        photoUrl: report.photoUrl,
+        isStaff: report.isStaff
+      });
+    });
+  }
+
+  function setReports(list) {
+    reports = list.slice().sort(function (a, b) { return a.at - b.at; });
+    rebuild();
+  }
+
+  /* Agrega un reporte nuevo. Regresa false si ya estaba (llega dos veces: al guardarlo y por tiempo real) */
+  function addReport(report) {
+    if (reports.some(function (r) { return r.id === report.id; })) return false;
+    reports.push(report);
+    reports.sort(function (a, b) { return a.at - b.at; });
+    rebuild();
+    return true;
+  }
+
+  /* true si algún reporte que contaba ya caducó (hay que recalcular) */
+  function hasExpiredReports() {
+    return oldestActiveAt !== null && oldestActiveAt < Date.now() - LIFETIME;
+  }
+
+  function getFeed() {
+    return feed;
+  }
+
+  /* --- Reglas --- */
+
+  /* Estado general de un baño. level: 'ok' | 'warn' | 'off' | 'unknown' */
   function getStatus(restroom) {
+    if (!restroom.reportCount) {
+      return { level: 'unknown', label: 'Sin reportes', icon: 'i-unknown' };
+    }
     if (restroom.access.value !== 'abierto') {
       return { level: 'off', label: accessState(restroom.access.value).label, icon: 'i-off' };
     }
     const missingSupply = SUPPLIES.some(function (s) { return restroom.supplies[s.key].value === 'no'; });
     if (missingSupply) return { level: 'warn', label: 'Con faltantes', icon: 'i-warn' };
-    const hasFault = FAULTS.some(function (f) { return restroom.faults[f.key].active; });
-    if (hasFault) return { level: 'warn', label: 'Con fallas', icon: 'i-warn' };
+    if (activeFaultCount(restroom)) return { level: 'warn', label: 'Con fallas', icon: 'i-warn' };
     return { level: 'ok', label: 'En orden', icon: 'i-check' };
+  }
+
+  function hasProblems(restroom) {
+    const level = getStatus(restroom).level;
+    return level === 'warn' || level === 'off';
   }
 
   function activeFaultCount(restroom) {
     return FAULTS.filter(function (f) { return restroom.faults[f.key].active; }).length;
   }
 
-  /*
-    Aplica un reporte a un baño. Si la respuesta coincide con lo que ya se
-    sabía, suma una confirmación; si es distinta, reemplaza el dato y
-    reinicia el conteo.
-      answers = {
-        access:   'abierto' | 'cerrado' | 'mantenimiento' | 'limpieza',
-        supplies: { papel: 'si' | 'no' | '?', ... }   ('?' = no sé, se ignora)
-        faults:   { puerta: true | false, ... }
-      }
-    Regresa la lista de textos de lo que cambió (vacía si solo confirmó).
-  */
-  function submitReport(id, answers) {
-    const restroom = findRestroom(id);
-    const changes = [];
-
-    if (answers.access === restroom.access.value) {
-      restroom.access.confirmations++;
-    } else {
-      restroom.access = { value: answers.access, confirmations: 1 };
-      changes.push(accessState(answers.access).feed);
-    }
-
+  /* Lo que intendencia tiene que hacer en un baño */
+  function pendingTasks(restroom) {
+    const tasks = [];
     SUPPLIES.forEach(function (supply) {
-      const answer = answers.supplies[supply.key];
-      const current = restroom.supplies[supply.key];
-      if (answer === '?') return;
-      if (answer === current.value) {
-        current.confirmations++;
-      } else {
-        restroom.supplies[supply.key] = { value: answer, confirmations: 1 };
-        changes.push(supplyPhrase(supply.key, answer));
-      }
+      if (restroom.supplies[supply.key].value === 'no') tasks.push('Reponer ' + supply.noun);
     });
-
     FAULTS.forEach(function (fault) {
-      const reported = answers.faults[fault.key];
-      const current = restroom.faults[fault.key];
-      if (reported && current.active) {
-        current.confirmations++;
-      } else if (reported && !current.active) {
-        restroom.faults[fault.key] = { active: true, confirmations: 1 };
-        changes.push(fault.label);
-      } else if (!reported && current.active) {
-        restroom.faults[fault.key] = { active: false, confirmations: 0 };
-        changes.push('Ya no hay: ' + lowerFirst(fault.label));
-      }
+      if (restroom.faults[fault.key].active) tasks.push('Revisar: ' + lowerFirst(fault.label));
     });
+    if (restroom.access.value !== 'abierto') tasks.push('Reportado como ' + lowerFirst(accessState(restroom.access.value).label));
+    return tasks;
+  }
 
-    restroom.updatedAt = Date.now();
-    feed.unshift({
-      building: restroom.building,
-      gender: restroom.gender,
-      floor: restroom.floor,
-      at: restroom.updatedAt,
-      texts: changes.length ? changes : ['Confirmó el estado actual']
-    });
-
-    return changes;
+  /* Reporte con todo en orden (lo usa intendencia al marcar un baño como atendido) */
+  function allGoodReport(restroomId, comment) {
+    const supplies = {};
+    SUPPLIES.forEach(function (s) { supplies[s.key] = 'si'; });
+    const faults = {};
+    FAULTS.forEach(function (f) { faults[f.key] = false; });
+    return { restroomId: restroomId, access: 'abierto', supplies: supplies, faults: faults, comment: comment || '' };
   }
 
   App.store = {
-    restrooms, feed,
+    LIFETIME,
+    restrooms,
     genderLabel, accessState,
-    findRestroom, getStatus, activeFaultCount, submitReport
+    findRestroom, getStatus, hasProblems, activeFaultCount, pendingTasks, allGoodReport,
+    setReports, addReport, rebuild, hasExpiredReports, getFeed
   };
 })(window.BanosFIME);
