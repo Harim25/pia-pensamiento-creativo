@@ -48,8 +48,10 @@ window.BanosFIME = window.BanosFIME || {};
   };
 
   /*
-    DATOS DE EJEMPLO. Baños que arrancan con algún problema; los que no
-    aparecen aquí arrancan en orden. La clave es edificio + tipo ('3M').
+    DATOS DE EJEMPLO. Solo se usan en el modo de prueba (sin Supabase), para
+    generar reportes falsos al abrir la página; ver buildDemoReports en api.js.
+    Baños que arrancan con algún problema; los que no aparecen aquí arrancan
+    en orden. La clave es edificio + tipo ('3M').
       access:     estado de acceso (si no se pone, está abierto)
       supplies:   insumo -> [valor ('si' | 'no'), número de confirmaciones]
       faults:     falla -> número de confirmaciones

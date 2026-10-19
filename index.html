@@ -8,6 +8,9 @@
   <meta name="theme-color" content="#0E6B3C">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 
+  <!-- Aplica el tema guardado antes de dibujar la página (evita un parpadeo) -->
+  <script src="js/theme.js"></script>
+
   <!-- Tipografías -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +21,7 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/report-sheet.css">
+  <link rel="stylesheet" href="css/sheets.css">
 </head>
 <body>
 
@@ -28,16 +31,24 @@
     <symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
     <symbol id="i-warn" viewBox="0 0 16 16"><path d="M8 2.2L14.2 13H1.8L8 2.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6.6v3M8 11.5v.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="i-off" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.2 8h5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-unknown" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6.4 6.6a1.7 1.7 0 1 1 2.4 1.5c-.5.3-.8.6-.8 1.2M8 11.2v.01" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
     <symbol id="i-chev" viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="5.6" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 13.6c.6-2.5 2.6-3.8 5-3.8s4.4 1.3 5 3.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 16 16"><path d="M2.5 5.5h2.2l1.2-1.8h4.2l1.2 1.8h2.2v7h-11z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="8.8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
   </svg>
 
   <!-- Encabezado -->
   <header class="hero">
     <div class="container">
-      <p class="hero-eyebrow">FIME · UANL</p>
+      <div class="hero-top">
+        <p class="hero-eyebrow">FIME · UANL</p>
+        <button type="button" class="account-button" id="account-button">
+          <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg><span id="account-button-label">Iniciar sesión</span>
+        </button>
+      </div>
       <h1>Bañoticias</h1>
       <p class="hero-lede">Mira qué baños tienen papel, jabón y agua antes de caminar hasta ahí. Si ves algo distinto, avisa en un toque.</p>
-      <p class="demo-tag">Versión de prueba con datos de ejemplo</p>
+      <p class="demo-tag" id="demo-tag" hidden>Modo de prueba: datos de ejemplo, los reportes no se guardan</p>
     </div>
   </header>
 
@@ -46,16 +57,20 @@
     <!-- Resumen general -->
     <section class="summary" aria-label="Resumen de todos los baños">
       <div class="stat">
-        <b id="summary-ok">0</b>
+        <b id="summary-ok">–</b>
         <span class="stat-label stat-label--ok"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>En orden</span>
       </div>
       <div class="stat">
-        <b id="summary-warn">0</b>
+        <b id="summary-warn">–</b>
         <span class="stat-label stat-label--warn"><svg class="icon" aria-hidden="true"><use href="#i-warn"/></svg>Con problemas</span>
       </div>
       <div class="stat">
-        <b id="summary-off">0</b>
+        <b id="summary-off">–</b>
         <span class="stat-label stat-label--off"><svg class="icon" aria-hidden="true"><use href="#i-off"/></svg>No disponibles</span>
+      </div>
+      <div class="stat">
+        <b id="summary-unknown">–</b>
+        <span class="stat-label stat-label--unknown"><svg class="icon" aria-hidden="true"><use href="#i-unknown"/></svg>Sin reportes</span>
       </div>
     </section>
 
@@ -63,9 +78,13 @@
     <div class="toolbar">
       <div class="segmented" role="group" aria-label="Vista">
         <button type="button" data-view="restrooms" aria-pressed="true">Baños</button>
-        <button type="button" data-view="feed" aria-pressed="false">Reportes recientes<span class="count-badge" id="feed-count">0</span></button>
+        <button type="button" data-view="feed" aria-pressed="false">Reportes<span class="count-badge" id="feed-count">0</span></button>
+        <button type="button" data-view="staff" aria-pressed="false" id="staff-view-button" hidden>Intendencia<span class="count-badge" id="staff-count">0</span></button>
       </div>
     </div>
+
+    <!-- Aviso de carga o de error -->
+    <div class="load-state" id="load-state" role="status" aria-live="polite">Cargando el estado de los baños…</div>
 
     <!-- Vista: baños por edificio -->
     <div id="panel-restrooms">
@@ -88,37 +107,117 @@
 
     <!-- Vista: reportes recientes -->
     <div id="panel-feed" hidden>
+      <p class="panel-note" id="feed-note"></p>
       <ul class="feed" id="feed"></ul>
     </div>
 
-    <p class="footer-note">Proyecto para ¡Ingenieros al rescate!, Pensamiento Creativo, FIME UANL. Equipo La Corregidora. Los pisos, el estado de cada baño y los reportes son datos de ejemplo. Lo que reportes aquí solo cambia lo que ves en tu pantalla.</p>
+    <!-- Vista: intendencia (solo para cuentas de personal) -->
+    <div id="panel-staff" hidden>
+      <p class="panel-note">Baños que necesitan reabastecimiento o reparación, del más urgente al menos urgente. Al terminar, márcalo como atendido para que todos vean que ya está en orden.</p>
+      <div class="staff-list" id="staff-list"></div>
+    </div>
+
+    <p class="footer-note">Proyecto para ¡Ingenieros al rescate!, Pensamiento Creativo, FIME UANL. Equipo La Corregidora.</p>
   </main>
 
-  <!-- Hoja de reporte (se llena desde js/report-sheet.js) -->
   <div class="scrim" id="scrim" hidden></div>
+
+  <!-- Hoja de reporte (se llena desde js/report-sheet.js) -->
   <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
     <div class="sheet-header">
       <div>
         <h2 id="sheet-title"></h2>
         <p id="sheet-subtitle"></p>
       </div>
-      <button type="button" class="sheet-close" id="sheet-close" aria-label="Cerrar"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+      <button type="button" class="sheet-close" aria-label="Cerrar"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
-    <div class="sheet-body"><form id="report-form"></form></div>
-    <div class="sheet-footer">
-      <button type="submit" form="report-form" class="submit-button">Enviar reporte</button>
+    <div class="sheet-body">
+      <div id="sheet-photos"></div>
+      <div class="notice" id="sheet-login-notice" hidden>
+        <p>Para reportar el estado de este baño necesitas iniciar sesión. Así evitamos reportes falsos.</p>
+        <button type="button" class="secondary-button" id="sheet-login-button">Iniciar sesión</button>
+      </div>
+      <form id="report-form"></form>
+    </div>
+    <div class="sheet-footer" id="sheet-footer">
+      <p class="form-error" id="report-error" role="alert" hidden></p>
+      <button type="submit" form="report-form" class="submit-button" id="report-submit">Enviar reporte</button>
       <p>Tu reporte se suma al de otras personas. Con más confirmaciones, el estado es más confiable.</p>
+    </div>
+  </section>
+
+  <!-- Hoja de inicio de sesión (js/auth.js) -->
+  <section class="sheet" id="auth-sheet" role="dialog" aria-modal="true" aria-labelledby="auth-title" hidden>
+    <div class="sheet-header">
+      <div>
+        <h2 id="auth-title">Iniciar sesión</h2>
+        <p>Necesitas una cuenta para reportar. Para consultar no.</p>
+      </div>
+      <button type="button" class="sheet-close" aria-label="Cerrar"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <div class="segmented segmented--full" role="group" aria-label="Tipo de acceso">
+        <button type="button" data-auth-mode="signin" aria-pressed="true">Iniciar sesión</button>
+        <button type="button" data-auth-mode="signup" aria-pressed="false">Crear cuenta</button>
+      </div>
+      <form id="auth-form" class="stack-form" novalidate>
+        <label class="field">
+          <span class="field-name">Correo</span>
+          <input type="email" name="email" id="auth-email" autocomplete="email" required>
+        </label>
+        <label class="field">
+          <span class="field-name">Contraseña</span>
+          <input type="password" name="password" id="auth-password" autocomplete="current-password" minlength="6" required>
+          <small class="field-hint">Mínimo 6 caracteres.</small>
+        </label>
+        <p class="form-error" id="auth-error" role="alert" hidden></p>
+        <p class="form-success" id="auth-success" role="status" hidden></p>
+        <button type="submit" class="submit-button" id="auth-submit">Iniciar sesión</button>
+        <p class="field-hint" id="auth-demo-hint" hidden>Modo de prueba: usa cualquier correo y una contraseña de 6 caracteres o más. Si el correo empieza con «intendencia» (por ejemplo intendencia@fime.mx), entras como personal de intendencia.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Hoja de cuenta y configuración (js/auth.js) -->
+  <section class="sheet" id="account-sheet" role="dialog" aria-modal="true" aria-labelledby="account-title" hidden>
+    <div class="sheet-header">
+      <div>
+        <h2 id="account-title">Mi cuenta</h2>
+        <p id="account-email"></p>
+      </div>
+      <button type="button" class="sheet-close" aria-label="Cerrar"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="sheet-body stack-form">
+      <p class="role-tag" id="account-role"></p>
+      <fieldset class="question">
+        <legend>Tema</legend>
+        <p class="question-meta">Se guarda solo en este dispositivo.</p>
+        <div class="options options--3" id="theme-options">
+          <label class="option"><input type="radio" name="theme" value="system"><span>Automático</span></label>
+          <label class="option"><input type="radio" name="theme" value="light"><span>Claro</span></label>
+          <label class="option"><input type="radio" name="theme" value="dark"><span>Oscuro</span></label>
+        </div>
+      </fieldset>
+      <button type="button" class="secondary-button" id="sign-out-button">Cerrar sesión</button>
     </div>
   </section>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
+  <!-- Supabase (base de datos) desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+
   <!-- Scripts (el orden importa: cada archivo usa lo que definen los anteriores) -->
+  <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/store.js"></script>
   <script src="js/render.js"></script>
+  <script src="js/dialog.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/report-sheet.js"></script>
+  <script src="js/staff.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
