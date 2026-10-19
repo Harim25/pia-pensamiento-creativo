@@ -15,8 +15,8 @@
 window.BanosFIME = window.BanosFIME || {};
 
 window.BanosFIME.config = {
-  supabaseUrl: '',
-  supabaseKey: '',
+  supabaseUrl: 'https://loupbzmuxqyrkynhpwux.supabase.co',
+  supabaseKey: 'sb_publishable_dXu2cfjLAGlxulAzD3M64Q_0yO801Np',
 
   /* Horas que un reporte cuenta para el estado de un baño. Después caduca */
   reportLifetimeHours: 8,
