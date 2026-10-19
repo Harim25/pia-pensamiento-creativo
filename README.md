@@ -4,7 +4,9 @@ Página web para saber qué baños de FIME tienen papel, jabón y agua antes de 
 
 Proyecto del equipo **La Corregidora** para el PIA *¡Ingenieros al rescate!* de Pensamiento Creativo (FIME, UANL).
 
-> **Estado actual:** la página ya está lista para conectarse a Supabase. Mientras `js/config.js` no tenga la URL y la llave, funciona en **modo de prueba**: usa reportes de ejemplo, el inicio de sesión es simulado y nada se guarda al recargar.
+**Página publicada:** <https://harim25.github.io/pia-pensamiento-creativo/>
+
+> **Estado actual:** conectada a Supabase y publicada con GitHub Pages. Cada cambio que se sube a `main` se publica solo en uno o dos minutos. Si `js/config.js` se deja sin URL y llave, la página funciona en **modo de prueba**: usa reportes de ejemplo, el inicio de sesión es simulado y nada se guarda al recargar.
 
 ## El problema
 
@@ -109,7 +111,7 @@ Los scripts se cargan en ese orden desde `index.html` y comparten un solo objeto
 - [x] Frenar reportes falsos: inicio de sesión, límite por persona y conteo de confirmaciones.
 - [x] Hacer pantalla de login.
 - [x] Hacer pantalla de configuración general (tema y cerrar sesión, en «Mi cuenta»).
-- [ ] Publicar la página (por ejemplo con GitHub Pages).
+- [x] Publicar la página con GitHub Pages.
 
 ## Cómo colaborar
 
