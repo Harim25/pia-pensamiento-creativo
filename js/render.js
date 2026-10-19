@@ -168,7 +168,7 @@
         + '<div class="staff-card-top">'
         + '<span class="building-number" aria-hidden="true">' + restroom.plate + '</span>'
         + '<div class="staff-card-title"><b>' + store.restroomName(restroom) + '</b>'
-        + '<small>' + restroom.floor + (restroom.note ? ' · ' + restroom.note : '') + ' · <span data-at="' + restroom.updatedAt + '">' + timeAgo(restroom.updatedAt) + '</span></small></div>'
+        + '<small>' + restroom.floor + ' · <span data-at="' + restroom.updatedAt + '">' + timeAgo(restroom.updatedAt) + '</span></small></div>'
         + statusPillHTML(restroom)
         + '</div>'
         + '<ul class="task-list">' + store.pendingTasks(restroom).map(function (task) { return '<li>' + escapeHTML(task) + '</li>'; }).join('') + '</ul>'

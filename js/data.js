@@ -46,9 +46,8 @@ window.BanosFIME = window.BanosFIME || {};
              No lo cambies si ya hay reportes guardados, porque se perderían.
       name:  nombre que se muestra.
       plate: texto de la placa (el cuadrito verde).
-      H, M:  baño de hombres y de mujeres. floor es el texto del piso y note
-             (opcional) ayuda a encontrarlo. Si un edificio no tiene uno de
-             los dos, se quita esa línea.
+      H, M:  baño de hombres y de mujeres, con el texto de su piso. Si un
+             edificio no tiene uno de los dos, se quita esa parte.
 
     No se incluyen Aulas de Posgrado, CCPI y CIDET (los alumnos no pueden usar
     sus baños), el Centro de Desarrollo Físico y Cultural (al parecer solo para
@@ -64,18 +63,10 @@ window.BanosFIME = window.BanosFIME || {};
     { key: '7', name: 'Edificio 7', plate: '7', H: { floor: 'Piso 1' }, M: { floor: 'Piso 1' } },
     { key: '8', name: 'Edificio 8', plate: '8', H: { floor: 'Piso 2' }, M: { floor: 'Piso 2' } },
     { key: '9', name: 'Edificio 9', plate: '9', H: { floor: 'Entre piso 2 y 3' }, M: { floor: 'Entre piso 1 y 2' } },
-    { key: '11', name: 'Edificio 11', plate: '11', H: { floor: 'Entre piso 2 y 3', note: 'En las escaleras' }, M: { floor: 'Entre piso 1 y 2', note: 'En las escaleras' } },
+    { key: '11', name: 'Edificio 11', plate: '11', H: { floor: 'Entre piso 2 y 3' }, M: { floor: 'Entre piso 1 y 2' } },
     { key: '12', name: 'Edificio 12', plate: '12', H: { floor: 'Piso 1' }, M: { floor: 'Piso 1' } },
-    {
-      key: 'BIB', name: 'Biblioteca', plate: 'BIB',
-      H: { floor: 'Piso 1', note: 'A la izquierda de la entrada, cerca de fotocopias' },
-      M: { floor: 'Piso 1', note: 'A la izquierda de la entrada, cerca de fotocopias' }
-    },
-    {
-      key: 'POL', name: 'Polideportivo', plate: 'POL',
-      H: { floor: 'Piso 1', note: 'Al final del pasillo detrás de las gradas' },
-      M: { floor: 'Piso 1', note: 'A la derecha de la entrada, en el pasillo detrás de las gradas' }
-    }
+    { key: 'BIB', name: 'Biblioteca', plate: 'BIB', H: { floor: 'Piso 1' }, M: { floor: 'Piso 1' } },
+    { key: 'POL', name: 'Polideportivo', plate: 'POL', H: { floor: 'Piso 1' }, M: { floor: 'Piso 1' } }
   ];
 
   /*

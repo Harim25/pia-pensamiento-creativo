@@ -37,7 +37,7 @@
   /*
     Forma de un baño:
       { id: '3M', building: '3', buildingName: 'Edificio 3', plate: '3', gender: 'M',
-        floor: 'Piso 2', note: '', reportCount, updatedAt, photos: [{ url, at }],
+        floor: 'Piso 2', reportCount, updatedAt, photos: [{ url, at }],
         access:   { value, confirmations },
         supplies: { papel: { value: 'si' | 'no' | '?', confirmations }, ... },
         faults:   { puerta: { active, confirmations }, ... } }
@@ -54,8 +54,7 @@
         buildingName: building.name,
         plate: building.plate,
         gender: gender.key,
-        floor: place.floor,
-        note: place.note || ''
+        floor: place.floor
       });
     });
   });
