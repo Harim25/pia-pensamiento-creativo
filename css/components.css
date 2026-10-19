@@ -104,7 +104,8 @@
   cursor: pointer;
 }
 
-.building-picker button[data-building="all"] {
+/* "Todos", "Biblioteca", "Polideportivo" van con la letra normal */
+.building-picker button.is-named {
   font-family: var(--f-body);
 }
 

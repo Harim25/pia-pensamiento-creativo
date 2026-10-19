@@ -102,7 +102,7 @@ Los scripts se cargan en ese orden desde `index.html` y comparten un solo objeto
 
 ## Pendientes
 
-- [ ] Confirmar los pisos reales de todos los edificios en `js/data.js`.
+- [x] Registrar los edificios y pisos reales de FIME en `js/data.js`.
 - [x] Guardar los reportes en un servidor para que todos vean lo mismo (falta conectar Supabase, ver arriba).
 - [x] Caducar reportes viejos.
 - [x] Permitir subir fotos a los reportes o comentarios.

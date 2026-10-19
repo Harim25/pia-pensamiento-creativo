@@ -2,7 +2,7 @@
 (function (App) {
   'use strict';
 
-  const { SUPPLIES, BUILDING_COUNT } = App.data;
+  const { SUPPLIES, BUILDINGS } = App.data;
   const { byId, escapeHTML, timeAgo, icon } = App.utils;
   const store = App.store;
 
@@ -19,13 +19,27 @@
     byId('staff-count').textContent = store.restrooms.filter(store.hasProblems).length;
   }
 
-  /* Botones "Todos, 1, 2, ... 12". Solo se dibuja una vez */
+  /* Los edificios numerados muestran su número; los demás (Biblioteca...), su nombre */
+  function isNumbered(buildingKey) {
+    return /^\d+$/.test(buildingKey);
+  }
+
+  /* Botones "Todos, 1, 2, ..., Biblioteca". Solo se dibuja una vez */
   function renderBuildingPicker() {
-    let html = '<button type="button" data-building="all" aria-pressed="true">Todos</button>';
-    for (let building = 1; building <= BUILDING_COUNT; building++) {
-      html += '<button type="button" data-building="' + building + '" aria-pressed="false">' + building + '</button>';
-    }
+    let html = '<button type="button" class="is-named" data-building="all" aria-pressed="true">Todos</button>';
+    BUILDINGS.forEach(function (building) {
+      const numbered = isNumbered(building.key);
+      html += '<button type="button"' + (numbered ? ' aria-label="' + building.name + '"' : ' class="is-named"')
+        + ' data-building="' + building.key + '" aria-pressed="false">'
+        + (numbered ? building.plate : building.name) + '</button>';
+    });
     byId('building-picker').innerHTML = html;
+  }
+
+  /* Título de la tarjeta: "Edificio [3]" o "[BIB] Biblioteca" */
+  function buildingTitleHTML(restroom) {
+    const plate = '<span class="building-number">' + restroom.plate + '</span>';
+    return isNumbered(restroom.building) ? 'Edificio ' + plate : plate + restroom.buildingName;
   }
 
   function chipsHTML(restroom) {
@@ -57,18 +71,18 @@
     const dim = level === 'off' || level === 'unknown';
     return '<button type="button" class="restroom-row' + (dim ? ' is-unavailable' : '') + '" data-id="' + restroom.id + '">'
       + '<span class="restroom-row-top">'
-      + '<span class="restroom-name"><b>' + store.genderLabel(restroom.gender) + '</b><span class="restroom-floor">Piso ' + restroom.floor + '</span></span>'
+      + '<span class="restroom-name"><b>' + store.genderLabel(restroom.gender) + '</b><span class="restroom-floor">' + restroom.floor + '</span></span>'
       + '<span class="restroom-row-end">' + statusPillHTML(restroom) + icon('i-chev') + '</span>'
       + '</span>'
       + '<span class="chips">' + chipsHTML(restroom) + '</span>'
       + '</button>';
   }
 
-  /* filters = { gender: 'all' | 'H' | 'M', building: 'all' | número, onlyProblems: boolean } */
+  /* filters = { gender: 'all' | 'H' | 'M', building: 'all' | key del edificio, onlyProblems: boolean } */
   function renderList(filters) {
     const visible = store.restrooms.filter(function (restroom) {
       return (filters.gender === 'all' || restroom.gender === filters.gender)
-        && (filters.building === 'all' || restroom.building === Number(filters.building))
+        && (filters.building === 'all' || restroom.building === filters.building)
         && (!filters.onlyProblems || store.hasProblems(restroom));
     });
 
@@ -100,7 +114,7 @@
 
       html += '<section class="building-card">'
         + '<div class="building-card-header">'
-        + '<h2>Edificio <span class="building-number">' + building + '</span></h2>'
+        + '<h2>' + buildingTitleHTML(groups[building][0]) + '</h2>'
         + '<span class="building-card-meta">' + meta + '</span>'
         + '</div>'
         + groups[building].map(restroomRowHTML).join('')
@@ -120,10 +134,11 @@
     }
 
     byId('feed').innerHTML = feed.map(function (report) {
+      const restroom = report.restroom;
       return '<li class="feed-item">'
-        + '<span class="building-number" aria-hidden="true">' + report.building + '</span>'
+        + '<span class="building-number" aria-hidden="true">' + restroom.plate + '</span>'
         + '<div class="feed-item-body">'
-        + '<div class="feed-item-title"><span>Edificio ' + report.building + ' · ' + store.genderLabel(report.gender) + ' · Piso ' + report.floor
+        + '<div class="feed-item-title"><span>' + store.restroomName(restroom) + ' · ' + restroom.floor
         + (report.isStaff ? ' <span class="staff-badge">Intendencia</span>' : '') + '</span>'
         + '<small data-at="' + report.at + '">' + timeAgo(report.at) + '</small></div>'
         + '<ul>' + report.texts.map(function (text) { return '<li>' + escapeHTML(text) + '</li>'; }).join('') + '</ul>'
@@ -151,9 +166,9 @@
     byId('staff-list').innerHTML = pending.map(function (restroom) {
       return '<section class="staff-card">'
         + '<div class="staff-card-top">'
-        + '<span class="building-number" aria-hidden="true">' + restroom.building + '</span>'
-        + '<div class="staff-card-title"><b>Edificio ' + restroom.building + ' · ' + store.genderLabel(restroom.gender) + '</b>'
-        + '<small>Piso ' + restroom.floor + ' · <span data-at="' + restroom.updatedAt + '">' + timeAgo(restroom.updatedAt) + '</span></small></div>'
+        + '<span class="building-number" aria-hidden="true">' + restroom.plate + '</span>'
+        + '<div class="staff-card-title"><b>' + store.restroomName(restroom) + '</b>'
+        + '<small>' + restroom.floor + ' · <span data-at="' + restroom.updatedAt + '">' + timeAgo(restroom.updatedAt) + '</span></small></div>'
         + statusPillHTML(restroom)
         + '</div>'
         + '<ul class="task-list">' + store.pendingTasks(restroom).map(function (task) { return '<li>' + escapeHTML(task) + '</li>'; }).join('') + '</ul>'

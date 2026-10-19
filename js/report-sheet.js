@@ -117,8 +117,8 @@
     current = store.findRestroom(id);
     const user = App.auth.getUser();
 
-    byId('sheet-title').textContent = 'Edificio ' + current.building + ' · ' + store.genderLabel(current.gender);
-    byId('sheet-subtitle').innerHTML = 'Piso ' + current.floor + ' · '
+    byId('sheet-title').textContent = store.restroomName(current);
+    byId('sheet-subtitle').innerHTML = current.floor + ' · '
       + (current.updatedAt ? 'Actualizado <span data-at="' + current.updatedAt + '">' + timeAgo(current.updatedAt) + '</span>' : 'Sin reportes recientes');
     byId('sheet-photos').innerHTML = photosHTML(current);
     byId('sheet-login-notice').hidden = Boolean(user);

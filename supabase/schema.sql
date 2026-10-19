@@ -62,7 +62,7 @@ on conflict (id) do nothing;
 
 create table if not exists public.reports (
   id          uuid primary key default gen_random_uuid(),
-  restroom_id text not null check (restroom_id ~ '^[0-9]{1,2}[HM]$'),   -- edificio + H/M, por ejemplo '3M'
+  restroom_id text not null check (restroom_id ~ '^[0-9A-Z]{1,5}[HM]$'),   -- edificio + H/M, por ejemplo '3M' o 'BIBH'
   user_id     uuid not null default auth.uid() references auth.users on delete cascade,
   created_at  timestamptz not null default now(),
   access      text not null check (access in ('abierto', 'cerrado', 'mantenimiento', 'limpieza')),

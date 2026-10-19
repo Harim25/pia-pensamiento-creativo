@@ -11,7 +11,7 @@
 (function (App) {
   'use strict';
 
-  const { SUPPLIES, FAULTS, ACCESS_STATES, GENDERS, BUILDING_COUNT, FLOORS } = App.data;
+  const { SUPPLIES, FAULTS, ACCESS_STATES, GENDERS, BUILDINGS } = App.data;
   const { MINUTE, lowerFirst } = App.utils;
 
   const LIFETIME = App.config.reportLifetimeHours * 60 * MINUTE;
@@ -36,17 +36,32 @@
 
   /*
     Forma de un baño:
-      { id: '3M', building, gender, floor, reportCount, updatedAt, photos: [{ url, at }],
+      { id: '3M', building: '3', buildingName: 'Edificio 3', plate: '3', gender: 'M',
+        floor: 'Piso 2', reportCount, updatedAt, photos: [{ url, at }],
         access:   { value, confirmations },
         supplies: { papel: { value: 'si' | 'no' | '?', confirmations }, ... },
         faults:   { puerta: { active, confirmations }, ... } }
     reportCount = 0 significa que no hay reportes recientes.
   */
   const restrooms = [];
-  for (let building = 1; building <= BUILDING_COUNT; building++) {
-    GENDERS.forEach(function (gender, genderIndex) {
-      restrooms.push({ id: building + gender.key, building: building, gender: gender.key, floor: FLOORS[building][genderIndex] });
+  BUILDINGS.forEach(function (building) {
+    GENDERS.forEach(function (gender) {
+      const place = building[gender.key];
+      if (!place) return;
+      restrooms.push({
+        id: building.key + gender.key,
+        building: building.key,
+        buildingName: building.name,
+        plate: building.plate,
+        gender: gender.key,
+        floor: place.floor
+      });
     });
+  });
+
+  /* "Edificio 3 · Mujeres" */
+  function restroomName(restroom) {
+    return restroom.buildingName + ' · ' + genderLabel(restroom.gender);
   }
 
   function resetRestroom(restroom) {
@@ -148,10 +163,7 @@
       }
       feed.unshift({
         id: report.id,
-        restroomId: restroom.id,
-        building: restroom.building,
-        gender: restroom.gender,
-        floor: restroom.floor,
+        restroom: restroom,
         at: report.at,
         texts: texts,
         comment: report.comment,
@@ -234,7 +246,7 @@
   App.store = {
     LIFETIME,
     restrooms,
-    genderLabel, accessState,
+    genderLabel, accessState, restroomName,
     findRestroom, getStatus, hasProblems, activeFaultCount, pendingTasks, allGoodReport,
     setReports, addReport, rebuild, hasExpiredReports, getFeed
   };
