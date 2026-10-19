@@ -1,4 +1,4 @@
-# Baños FIME
+# Bañoticias
 
 Página web para saber qué baños de FIME tienen papel, jabón y agua antes de caminar hasta ahí, y para reportar en un toque lo que cada quien ve.
 
