@@ -9,7 +9,7 @@
   const api = App.api;
   const dialog = App.dialog;
 
-  const ROLE_LABELS = { student: 'Cuenta de usuario', staff: 'Cuenta de intendencia' };
+  const ROLE_LABELS = { student: 'Cuenta de usuario', staff: 'Cuenta de personal' };
 
   let user = null;
   let mode = 'signin';         /* 'signin' | 'signup' */

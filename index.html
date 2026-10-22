@@ -79,7 +79,7 @@
       <div class="segmented" role="group" aria-label="Vista">
         <button type="button" data-view="restrooms" aria-pressed="true">Baños</button>
         <button type="button" data-view="feed" aria-pressed="false">Reportes<span class="count-badge" id="feed-count">0</span></button>
-        <button type="button" data-view="staff" aria-pressed="false" id="staff-view-button" hidden>Intendencia<span class="count-badge" id="staff-count">0</span></button>
+        <button type="button" data-view="staff" aria-pressed="false" id="staff-view-button" hidden>Pendientes<span class="count-badge" id="staff-count">0</span></button>
       </div>
     </div>
 
@@ -111,7 +111,7 @@
       <ul class="feed" id="feed"></ul>
     </div>
 
-    <!-- Vista: intendencia (solo para cuentas de personal) -->
+    <!-- Vista: pendientes (solo para cuentas de personal: intendencia, prefectura) -->
     <div id="panel-staff" hidden>
       <p class="panel-note">Baños que necesitan reabastecimiento o reparación, del más urgente al menos urgente. Al terminar, márcalo como atendido para que todos vean que ya está en orden.</p>
       <div class="staff-list" id="staff-list"></div>
@@ -173,7 +173,7 @@
         <p class="form-error" id="auth-error" role="alert" hidden></p>
         <p class="form-success" id="auth-success" role="status" hidden></p>
         <button type="submit" class="submit-button" id="auth-submit">Iniciar sesión</button>
-        <p class="field-hint" id="auth-demo-hint" hidden>Modo de prueba: usa cualquier correo y una contraseña de 6 caracteres o más. Si el correo empieza con «intendencia» (por ejemplo intendencia@fime.mx), entras como personal de intendencia.</p>
+        <p class="field-hint" id="auth-demo-hint" hidden>Modo de prueba: usa cualquier correo y una contraseña de 6 caracteres o más. Si el correo empieza con «personal» (por ejemplo personal@fime.mx), entras con una cuenta de personal.</p>
       </form>
     </div>
   </section>

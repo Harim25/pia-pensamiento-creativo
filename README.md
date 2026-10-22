@@ -28,7 +28,7 @@ De la entrevista y de la dinámica de los 6 sombreros salió lo siguiente, que e
 - Los reportes caducan a las 8 horas (`reportLifetimeHours` en `js/config.js`). Un baño sin reportes recientes aparece como «Sin reportes».
 - Anti-spam: una persona no puede reportar el mismo baño dos veces en 10 minutos, ni más de 30 reportes al día.
 - Los reportes de otras personas aparecen al momento (tiempo real).
-- Las cuentas de intendencia ven una pestaña extra con los baños que necesitan atención y pueden marcarlos como atendidos.
+- Las cuentas de personal (intendencia, prefectura) ven una pestaña extra, «Pendientes», con los baños que necesitan atención, y pueden marcarlos como atendidos.
 - En «Mi cuenta» se elige el tema (automático, claro u oscuro) y se cierra sesión.
 
 ## Cómo verla
@@ -41,7 +41,7 @@ python -m http.server 5173
 
 y luego entra a <http://localhost:5173>. En modo de prueba también abre con doble clic en `index.html`.
 
-**Modo de prueba:** inicia sesión con cualquier correo y una contraseña de 6 caracteres o más. Si el correo empieza con `intendencia` (por ejemplo `intendencia@fime.mx`), entras como personal de intendencia.
+**Modo de prueba:** inicia sesión con cualquier correo y una contraseña de 6 caracteres o más. Si el correo empieza con `personal` (por ejemplo `personal@fime.mx`), entras con una cuenta de personal.
 
 ## Conectar Supabase
 
@@ -51,7 +51,7 @@ Lo hace una sola vez quien administra el proyecto de Supabase:
 2. **Quitar la confirmación por correo** (recomendado). En *Authentication → Sign In / Providers → Email*, desactiva *Confirm email*. El plan gratuito solo manda unos pocos correos por hora, así que con la confirmación activada la gente no podría registrarse en la entrega.
 3. **Poner la URL de la página.** En *Authentication → URL Configuration*, pon en *Site URL* la dirección donde está publicada la página.
 4. **Pegar las llaves.** En `js/config.js` pon la URL del proyecto y la **Publishable key** (empieza con `sb_publishable_`), ambas en *Project Settings → API Keys*. Esa llave sí se puede subir a GitHub. **La secreta (`sb_secret_`) nunca va en el código ni en el README.**
-5. **Cuentas de intendencia.** La persona crea su cuenta en la página y después, en el SQL Editor, corres:
+5. **Cuentas de personal** (intendencia, prefectura). La persona crea su cuenta en la página y después, en el SQL Editor, corres:
 
    ```sql
    update public.profiles set role = 'staff' where email = 'correo@ejemplo.com';
@@ -65,7 +65,7 @@ css/
   variables.css       Colores, sombras y tipografías (tema claro y oscuro)
   base.css            Reinicio y utilidades generales
   layout.css          Encabezado, resumen y pie
-  components.css      Controles, filtros, tarjetas, reportes, intendencia, botones
+  components.css      Controles, filtros, tarjetas, reportes, pendientes, botones
   sheets.css          Hojas (reporte, inicio de sesión, cuenta) y campos de formulario
 js/
   theme.js            Tema claro/oscuro (se carga primero, en el <head>)
@@ -74,11 +74,11 @@ js/
   utils.js            Funciones de apoyo (tiempo, fotos, avisos)
   api.js              Comunicación con Supabase, o el modo de prueba si no hay llaves
   store.js            Estado de los baños calculado a partir de los reportes
-  render.js           Dibuja el resumen, la lista, los reportes y la vista de intendencia
+  render.js           Dibuja el resumen, la lista, los reportes y la vista de pendientes
   dialog.js           Abre y cierra las hojas
   auth.js             Inicio de sesión, crear cuenta y «Mi cuenta»
   report-sheet.js     Formulario de reporte con foto y comentario
-  staff.js            Botón «Marcar como atendido» de intendencia
+  staff.js            Botón «Marcar como atendido» del personal
   main.js             Filtros, vistas y carga inicial; aquí arranca todo
 supabase/
   schema.sql          Tablas, reglas de seguridad y bucket de fotos

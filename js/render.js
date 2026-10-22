@@ -139,7 +139,7 @@
         + '<span class="building-number" aria-hidden="true">' + restroom.plate + '</span>'
         + '<div class="feed-item-body">'
         + '<div class="feed-item-title"><span>' + store.restroomName(restroom) + ' · ' + restroom.floor
-        + (report.isStaff ? ' <span class="staff-badge">Intendencia</span>' : '') + '</span>'
+        + (report.isStaff ? ' <span class="staff-badge">Personal</span>' : '') + '</span>'
         + '<small data-at="' + report.at + '">' + timeAgo(report.at) + '</small></div>'
         + '<ul>' + report.texts.map(function (text) { return '<li>' + escapeHTML(text) + '</li>'; }).join('') + '</ul>'
         + (report.comment ? '<p class="feed-comment">«' + escapeHTML(report.comment) + '»</p>' : '')
@@ -148,7 +148,7 @@
     }).join('');
   }
 
-  /* Lista de pendientes para intendencia: primero los no disponibles, luego los que tienen más tareas */
+  /* Lista de pendientes para el personal: primero los no disponibles, luego los que tienen más tareas */
   function renderStaff() {
     const order = { off: 0, warn: 1 };
     const pending = store.restrooms

@@ -1,4 +1,4 @@
-/* Vista de intendencia: marcar como atendido un baño con pendientes. */
+/* Vista de pendientes del personal (intendencia, prefectura): marcar como atendido un baño. */
 (function (App) {
   'use strict';
 
@@ -14,7 +14,7 @@
     button.disabled = true;
     button.textContent = 'Guardando…';
     try {
-      const saved = await App.api.createReport(user, store.allGoodReport(restroom.id, 'Atendido por intendencia'), null);
+      const saved = await App.api.createReport(user, store.allGoodReport(restroom.id, 'Atendido por el personal'), null);
       store.addReport(saved);
       onReport();
       showToast(store.restroomName(restroom) + ' quedó en orden.');

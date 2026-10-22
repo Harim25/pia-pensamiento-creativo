@@ -173,9 +173,9 @@ create policy "Usuarios con sesión suben fotos a su carpeta"
 
 
 -- ---------------------------------------------------------------------
--- Cuentas de intendencia
+-- Cuentas de personal (intendencia, prefectura)
 --
--- Para dar acceso a la vista de intendencia, la persona primero crea su
+-- Para dar acceso a la pestaña «Pendientes», la persona primero crea su
 -- cuenta en la página y luego alguien del equipo corre (cambiando el correo):
 --
 --   update public.profiles set role = 'staff' where email = 'correo@ejemplo.com';

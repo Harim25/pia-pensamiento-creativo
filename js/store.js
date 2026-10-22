@@ -157,7 +157,7 @@
 
       let texts = changes;
       if (!texts.length) {
-        if (report.isStaff) texts = ['Intendencia lo dejó en orden'];
+        if (report.isStaff) texts = ['El personal lo dejó en orden'];
         else if (wasUnknown) texts = ['Todo en orden'];
         else texts = ['Confirmó el estado actual'];
       }
@@ -221,7 +221,7 @@
     return FAULTS.filter(function (f) { return restroom.faults[f.key].active; }).length;
   }
 
-  /* Lo que intendencia tiene que hacer en un baño */
+  /* Lo que el personal tiene que hacer en un baño */
   function pendingTasks(restroom) {
     const tasks = [];
     SUPPLIES.forEach(function (supply) {
@@ -234,7 +234,7 @@
     return tasks;
   }
 
-  /* Reporte con todo en orden (lo usa intendencia al marcar un baño como atendido) */
+  /* Reporte con todo en orden (lo usa el personal al marcar un baño como atendido) */
   function allGoodReport(restroomId, comment) {
     const supplies = {};
     SUPPLIES.forEach(function (s) { supplies[s.key] = 'si'; });

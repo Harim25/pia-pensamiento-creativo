@@ -22,7 +22,7 @@
     byId('panel-staff').hidden = view !== 'staff';
   }
 
-  /* La vista de intendencia solo aparece con una cuenta de personal */
+  /* La vista de pendientes solo aparece con una cuenta de personal */
   function handleUserChange(user) {
     const isStaff = Boolean(user && user.role === 'staff');
     byId('staff-view-button').hidden = !isStaff;

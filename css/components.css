@@ -355,7 +355,7 @@
   border: 1px solid var(--line);
 }
 
-/* Etiqueta "Intendencia" en un reporte */
+/* Etiqueta "Personal" en un reporte */
 .staff-badge {
   display: inline-block;
   margin-left: 4px;
@@ -367,7 +367,7 @@
   vertical-align: middle;
 }
 
-/* Vista de intendencia */
+/* Vista de pendientes del personal */
 .staff-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));

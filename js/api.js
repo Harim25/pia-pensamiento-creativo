@@ -218,7 +218,7 @@
       if (!/^\S+@\S+\.\S+$/.test(email)) return Promise.reject(new Error('Escribe un correo válido.'));
       if (password.length < 6) return Promise.reject(new Error('La contraseña debe tener al menos 6 caracteres.'));
       return later().then(function () {
-        setUser({ id: 'demo-' + email, email: email, role: /^intendencia/i.test(email) ? 'staff' : 'student' });
+        setUser({ id: 'demo-' + email, email: email, role: /^personal/i.test(email) ? 'staff' : 'student' });
       });
     }
 
