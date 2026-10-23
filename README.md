@@ -1,5 +1,9 @@
 # Bañoticias
 
+> **Esta es mi copia personal del proyecto.** La versión oficial, que mantiene la comunidad de FIME, está en
+> [Banoticias-FIME/pia-pensamiento-creativo](https://github.com/Banoticias-FIME/pia-pensamiento-creativo) ·
+> Página oficial: [banoticias-fime.github.io/pia-pensamiento-creativo](https://banoticias-fime.github.io/pia-pensamiento-creativo/)
+
 Página web para saber qué baños de FIME tienen papel, jabón y agua antes de caminar hasta ahí, y para reportar en un toque lo que cada quien ve.
 
 Proyecto del equipo **La Corregidora** para el PIA *¡Ingenieros al rescate!* de Pensamiento Creativo (FIME, UANL).
